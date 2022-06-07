@@ -1,10 +1,13 @@
-import { useQuery } from '@apollo/client';
-import { GET_DIRECTORS_QUERY } from '../queries/queries'
+import { useState } from 'react';
+import { useQuery, useMutation } from '@apollo/client';
+import { GET_DIRECTORS_QUERY, ADD_MOVIE_MUTATION, GET_MOVIES_QUERY } from '../queries/queries'
 
 function AddMovie() {
+    const [name, setName] = useState("");
+    const [genre, setGenre] = useState("");
+    const [directorID, setDirectorID] = useState("");
+    const [addMovie] = useMutation(ADD_MOVIE_MUTATION);
     const { loading, data, error } = useQuery(GET_DIRECTORS_QUERY);
-
-    
 
     const renderDirectors = () => {
         if (loading) return <option disabled>Loading...</option>;
@@ -13,19 +16,32 @@ function AddMovie() {
             return <option key={director.id} value={director.id}>{director.name}</option>
         })
     }
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        addMovie({
+            variables: {
+                name: name,
+                genre: genre,
+                directorId: directorID
+            },
+            refetchQueries:[{query:GET_MOVIES_QUERY}]
+        });
+    }
+
     return (
-      <form id="add-movie">
+      <form id="add-movie" onSubmit={handleSubmit}>
         <div>
             <label htmlFor="movie-name">Movie Name:</label>
-            <input id="movie-name" name="movie-name" type="text"/>
+            <input id="movie-name" name="movie-name" type="text" onChange={(e)=>setName(e.target.value)}/>
         </div>
         <div>
             <label htmlFor="genre">Genre:</label>
-            <input id="genre" name="genre" type="text"/>
+            <input id="genre" name="genre" type="text" onChange={(e)=>setGenre(e.target.value)}/>
         </div>
         <div>
             <label htmlFor="director">Director:</label>
-            <select id="director" name="director" >
+            <select id="director" name="director" onChange={(e)=>setDirectorID(e.target.value)}>
                 <option>Select a Director</option>
                 {renderDirectors()}
             </select>
