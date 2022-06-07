@@ -3,10 +3,11 @@ const _ = require('lodash');
 
 const { 
     GraphQLObjectType, 
-    GraphQLString, 
     GraphQLSchema, 
+    GraphQLString,
     GraphQLID,
-    GraphQLInt
+    GraphQLInt,
+    GraphQLList
 } = graphql;
 
 const movies = [
@@ -14,9 +15,9 @@ const movies = [
     { name: 'Moonrise Kingdom', genre: 'Romance', id: '2', directorId: '2' },
     { name: 'La La Land', genre: 'Musical', id: '3', directorId: '3' },
     { name: 'Interestellar', genre: 'Sci-fi', id: '4', directorId: '4' },
-    { name: 'The Grand Budapest Hotel', genre: 'Comedy', id: '4', directorId: '4' },
-    { name: 'Interestellar', genre: 'Sci-fi', id: '4', directorId: '4' },
-    { name: 'Interestellar', genre: 'Sci-fi', id: '4', directorId: '4' },
+    { name: 'The Grand Budapest Hotel', genre: 'Comedy', id: '5', directorId: '2' },
+    { name: 'Whiplash', genre: 'Drama', id: '6', directorId: '3' },
+    { name: 'First Man', genre: 'Biography', id: '7', directorId: '3' }
 ]
 
 const directors = [
@@ -47,7 +48,13 @@ const DirectorType = new GraphQLObjectType({
     fields: () => ({
         id: { type: GraphQLID },
         name: { type: GraphQLString },
-        age: { type: GraphQLInt }
+        age: { type: GraphQLInt },
+        movies: {
+            type: new GraphQLList(MovieType),
+            resolve(parent, args) {
+                return _.filter(movies, { directorId: parent.id })
+            }
+        }
     })
 })
 
@@ -68,6 +75,18 @@ const RootQuery = new GraphQLObjectType({
             args: { id: { type: GraphQLID } },
             resolve(parent, args) {
                 return _.find(directors, { id: args.id });
+            }
+        },
+        movies: {
+            type: new GraphQLList(MovieType),
+            resolve(parent, args) {
+                return movies;
+            }
+        },
+        directors: {
+            type: new GraphQLList(DirectorType),
+            resolve(parent, args) {
+                return directors;
             }
         }
     })
